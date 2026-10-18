@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# Linux entrypoint; resolve symlinks so ~/.local/bin/council uses this project.
+set -euo pipefail
+SOURCE="$(readlink -f -- "${BASH_SOURCE[0]}")"
+HERE="$(dirname -- "$SOURCE")"
+exec uv run --locked --project "$HERE" --quiet python "$HERE/council.py" "$@"
