@@ -1,0 +1,60 @@
+# Commands are argv lists, never shell strings. See docs/configuration.md.
+# Empty model means use the CLI's configured default, not necessarily its latest model.
+settings:
+  mode: peer-to-peer            # interactive runs ask; --mode or --non-interactive skips questions
+  peer_turns: sequential        # peer rounds 2+: sequential direct turns, or parallel (faster)
+  leader: claude                # used only in hierarchical mode
+  max_rounds: 3
+  per_agent_timeout_sec: 420
+  session_wallclock_cap_sec: 2400 # soft cap on starting discussion rounds
+  build_timeout_sec: 300
+  synthesizer: claude
+  framer: claude
+  min_agents: 2                  # enforced at startup and after every discussion round
+  verify_build: true             # runs the generated RUN command on this machine
+
+# One shared library for every configured agent. Install once with --install-skills.
+# '*' advertises all installed skills; named skills are also inlined in prompts.
+skills:
+  enabled: true
+  names: ["*"]
+
+agents:
+  - name: claude
+    enabled: true
+    role_preset: architect
+    model: ""
+    output_mode: claude_stream_json  # text streams live; claude_json waits for the end
+    # stdin has no size limit; argv prompts stop at 128 KiB on Linux (long debates).
+    prompt_via: stdin
+    env:
+      CLAUDE_CONFIG_DIR: "{session}/claude-config"
+    argv: ["claude", "-p", "--output-format", "stream-json", "--verbose", "--include-partial-messages"]
+
+  - name: codex
+    enabled: true
+    role_preset: implementer
+    model: ""
+    output_mode: file
+    prompt_via: stdin             # "-" makes codex exec read its instructions from stdin
+    argv: ["codex", "exec", "--skip-git-repo-check", "-o", "{outfile}", "-"]
+
+  - name: agy
+    enabled: true
+    role_preset: researcher
+    model: ""
+    output_mode: stdout
+    # --sandbox does not grant tool permissions; headless tool calls can be denied.
+    # --print takes the prompt as its value and agy does not read stdin, so the
+    # prompt is an argument (128 KiB limit on Linux; Council reports oversize prompts).
+    argv: ["agy", "--print", "{prompt}", "--sandbox"]
+
+  - name: hermes
+    enabled: true
+    role_preset: skeptic
+    # Hermes reads its own configured provider and model (e.g. a local Qwen model);
+    # an empty model preserves that choice.
+    # hermes -z takes the prompt as an argument (no stdin): 128 KiB limit on Linux.
+    model: ""
+    output_mode: stdout
+    argv: ["hermes", "-z", "{prompt}"]

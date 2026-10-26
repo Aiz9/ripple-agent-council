@@ -1,0 +1,47 @@
+[project]
+name = "ripple-agent-council"  # PyPI name; the package is agent_council and the command is council
+version = "0.8.0"
+description = "Multi-agent CLI orchestrator: one prompt, several coding-agent CLIs debate to consensus."
+keywords = ["ai", "agents", "multi-agent", "llm", "claude-code", "codex", "mcp", "orchestration"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Operating System :: POSIX",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development",
+]
+requires-python = ">=3.11"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Madan Sen" }]
+dependencies = [
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# Export Council spans to an OpenTelemetry backend (see docs/observability.md).
+otel = ["opentelemetry-sdk>=1.24", "opentelemetry-exporter-otlp-proto-http>=1.24"]
+
+[project.urls]
+Homepage = "https://github.com/Aiz9/ripple-agent-council"
+Documentation = "https://github.com/Aiz9/ripple-agent-council/tree/main/docs"
+Issues = "https://github.com/Aiz9/ripple-agent-council/issues"
+Changelog = "https://github.com/Aiz9/ripple-agent-council/blob/main/CHANGELOG.md"
+
+[project.scripts]
+council = "agent_council.cli:main"
+
+[build-system]
+requires = ["setuptools>=77"]  # SPDX `license` string and `license-files`
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["agent_council"]
+
+[tool.setuptools.package-data]
+agent_council = ["agents.yaml"]
+
+[dependency-groups]
+dev = ["opentelemetry-sdk>=1.24"]
